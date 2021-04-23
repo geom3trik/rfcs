@@ -6,9 +6,9 @@ The aim of this RFC is to provide an overview of the concepts and challenges in 
 
 ## Motivation
 
-UI layout involves the positioning and sizing of UI 'elements' within the application window. In a declarative UI framework, made popular by modern web frameworks, the user declares what elements should be placed on the screen, with a minimal set of layout properties, and a layout algorithm or system arranges those elements into the final visual output. Ideally, layout is done in such a way that the user can declare the size and position of elements in a flexible way so as to accomodate different screen sizes. This is esspecially important in the context of a multi-platform application such as a game, but also for an editor which can bve viewed at different resolutions and which could utilise the same layout algorithm.
+UI layout involves the positioning and sizing of UI 'elements' within the application window. In a declarative UI framework, made popular by modern web frameworks, the user declares what elements should be placed on the screen, with a minimal set of layout properties, and a layout algorithm or system arranges those elements into the final visual output. Ideally, layout is done in such a way that the user can declare the size and position of elements in a flexible way so as to accommodate different screen sizes. This is especially important in the context of a multi-platform application such as a game, but also for an editor which can be viewed at different resolutions and which could utilize the same layout algorithm.
 
-At the heart of a UI layout algorithm is the concept of a visual tree or hierarchy of elements. The document object model (DOM) from the web world is an example of such a tree. This concept allows for parenting of UI elements so that the size and position of the parent could affect in some way the sizes and position its children. This concept is what allows for a 'flexible' layout system which is able to adapt to different output sceen sizes.
+At the heart of a UI layout algorithm is the concept of a visual tree or hierarchy of elements. The document object model (DOM) from the web world is an example of such a tree. This concept allows for parenting of UI elements so that the size and position of the parent could affect in some way the sizes and position its children. This concept is what allows for a 'flexible' layout system which is able to adapt to different output screen sizes.
 
 ## Guide-level explanation
 
@@ -60,13 +60,13 @@ An overview of the layout system for working with stacks, in which child element
 ### Terminology
 
 #### Coordinate System
-For the explanation to follow, we assume a cartesian coordinate system with an x axis pointing from left to right and a y axis pointing from top to bottom, with the origin in the top-left corner of the screen or parent element. This choice is somewhat arbitarary, taking inspiration from other UI frameworks, but ultimately can be changed before the layout algorithm is finalized.
+For the explanation to follow, we assume a Cartesian coordinate system with an x axis pointing from left to right and a y axis pointing from top to bottom, with the origin in the top-left corner of the screen or parent element. This choice is somewhat arbitrary, taking inspiration from other UI frameworks, but ultimately can be changed before the layout algorithm is finalized.
 
 #### Bounding Box
 The proposed layout algorithm assumes that elements are contained within an axis-aligned bounding box. The purpose of the layout algorithm then is to calculate the size and position of the element bounding boxes based on a finite set of user-defined layout properties on each of the elements.
 
 ### Axes
-A concious decision has been taken to define properties which act in either the horizonal or vertical axes. This is in contrast to systems like flex-box which define properties along a 'main' and 'cross' direction which change depending on the 'flex-direction'. Consequently, this proposed algorithm sacrifices easy transposability for clarity and ease-of-use.
+A conscious decision has been taken to define properties which act in either the horizontal or vertical axes. This is in contrast to systems like flex-box which define properties along a 'main' and 'cross' direction which change depending on the 'flex-direction'. Consequently, this proposed algorithm sacrifices easy transposability for clarity and ease-of-use.
 
 ### Layout Type and Position Type
 By default, elements within a parent are arranged into a stack. A stack is a collection of elements placed one after another in either a horizontal (row) or vertical (column) direction. The direction of the stack is determined by the `layout-type` property, which can take on the value of `row`, `column`, or `grid`. A grid layout is separate to a stack and will be discussed later.
@@ -88,19 +88,19 @@ The `Percentage` variant allows allows for spacing to be specified as a fraction
 
 The `Stretch` variant allows for spacing to be specified as a proportion of the 'free-space' available in that axis. Free-space for a particular axis is calculated as the parent size minus the 'used-space', where used-space is the sum of size and spacing which is described by pixels or percentages. For example, a parent with a width of 400 pixels, with two children each with widths of 100 pixels, and assuming 0 spacing, would have a free-space of: 400 - 100 + 100 = 200 pixels. The proportion of the free-space used by an element set to `Stretch` is the stretch value divided by the sum of all stretch values in the same axis. Thus final_size = (stretch / stretch_sum) * free_space. The various uses of the `Stretch` variant will be explored in more detail later on.
 
-The `Auto` variant allows for spacing to be overriden by the parent. This will be explored in the Child Spacing section later on.
+The `Auto` variant allows for spacing to be overridden by the parent. This will be explored in the Child Spacing section later on.
 
 ### Sizing
 As well as positioning the elements, the layout algorithm is also responsible for assigning them a size. For this only two properties are required `width` and `height`. As with spacing the width and height properties are assigned a `Units` variant. The variants work in the same way as described previously with the exception of the `Auto` variant. For sizing, the `Auto` variant causes the element to 'hug' its child elements. The final width and height of the element is thus dependent on its stack direction. For a vertical stack the final height of the element when set to `Auto` will be the sum of the heights of its child elements, while the width will be the maximum of the widths of its child elements. The inverse is true for a horizontal stack, with the final width being the sum of the widths of the child elements and the final height being the maximum of the child element heights. The ability for an element to 'hug' its children is important for container widgets that must grow with the child elements added to it. 
 
 ### Flexible Layouts
-With the spacing and sizing behaviour described previously, it is possible to build a UI layout which is flexible by specifying a non-zero number of space and size properties to be `Stretch`. 
+With the spacing and sizing behavior described previously, it is possible to build a UI layout which is flexible by specifying a non-zero number of space and size properties to be `Stretch`. 
 
 // TODO - More here
 
 
 ### Child Spacing
-For a parent with multiple child elements arranged in a stack it becomes neccessary to apply spacing around all of the child elements as well as between them in an easy way. While it is possible to acheive this by applying soacing to each of the individual elements, the proposed layout algorithm includes the concept of `child-space` which is an override for child elements with an individual spacing set to `Auto`. There are six child spacing proeprties: `child-left`, `child-right`, `child-top`, `child-bottom`, `row-between`, `column-between`. The first four are synonomous with the individual spacing counterparts. For example, `child-left` will override the spacing of all child elements with a `left` spacing set to `Auto`.
+For a parent with multiple child elements arranged in a stack it becomes neccessary to apply spacing around all of the child elements as well as between them in an easy way. While it is possible to achieve this by applying spacing to each of the individual elements, the proposed layout algorithm includes the concept of `child-space` which is an override for child elements with an individual spacing set to `Auto`. There are six child spacing properties: `child-left`, `child-right`, `child-top`, `child-bottom`, `row-between`, `column-between`. The first four are synonymous with the individual spacing counterparts. For example, `child-left` will override the spacing of all child elements with a `left` spacing set to `Auto`.
 
 The two different properties are `row-between` and `column-between`. These properties also override individual child spacing but only on elements that are not on the 'outside' of a stack. For a non-wrapping stack these would be the firt and last child elements. For example, for a horizontal stack, `row-between` overrides both the `left` and `right` properties of the child elements to apply spacing between them. As with individual spacing the child spacing properties also use `Units`, where each variant behaves in the same was as described for individual spacing, apart from the `Auto` variant which has no effect.
 
